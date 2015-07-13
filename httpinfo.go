@@ -54,7 +54,6 @@ func (l *httpInfo) Header() http.Header {
 
 func (l *httpInfo) Write(b []byte) (int, error) {
 	if l.status == 0 {
-		// The status will be StatusOK if WriteHeader has not been called yet
 		l.status = http.StatusOK
 	}
 	size, err := l.w.Write(b)
@@ -88,5 +87,4 @@ func (l *httpInfo) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	t := time.Now()
 	l.h.ServeHTTP(l, req)
 	l.elapsed = time.Since(t)
-	// writeLog(h.writer, req, url, t, logger.Status(), logger.Size())
 }
