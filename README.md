@@ -14,7 +14,7 @@ For example:
         info.ServeHTTP(w, r)
 
         // log response
-        fmt.Printf("Request: %s %s %s %d %d (%d) ", r.Method, r.RequestURI, r.Proto, info.Status(), info.Size(), info.Elapsed())
+        fmt.Printf("Request: %s %s %s %d %d %d (%d) ", r.Method, r.RequestURI, r.Proto, info.ReqSize(), info.Status(), info.Size(), info.Elapsed())
       })
     }
 

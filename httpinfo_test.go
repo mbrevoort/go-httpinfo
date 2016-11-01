@@ -36,6 +36,10 @@ func TestHTTPInfo(t *testing.T) {
 		t.Errorf("Expected Size() to be %d but was %d", 4, info.Size())
 	}
 
+	if info.ReqSize() != 74 {
+		t.Errorf("Expected ReqSize() to be %d but was %d", 74, info.ReqSize())
+	}
+
 	if info.Elapsed() < durationLower {
 		t.Errorf("Expected Elapsed() to be greater than %d but was %d", durationLower, info.Elapsed())
 	}

@@ -12,6 +12,7 @@ type httpInfo struct {
 	h       http.Handler
 	status  int
 	size    int
+	reqSize int
 	elapsed time.Duration
 }
 
@@ -20,6 +21,7 @@ type HTTPInfo interface {
 	Header() http.Header
 	Status() int
 	Size() int
+	ReqSize() int
 	Elapsed() time.Duration
 	ServeHTTP(w http.ResponseWriter, req *http.Request)
 }
@@ -77,14 +79,42 @@ func (l *httpInfo) Size() int {
 	return l.size
 }
 
+func (l *httpInfo) ReqSize() int {
+	return l.reqSize
+}
+
 // Elapsed returns duration of time for the request
 func (l *httpInfo) Elapsed() time.Duration {
 	return l.elapsed
 }
 
 func (l *httpInfo) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	reqLenChan := make(chan int)
+	go computeApproximateRequestSize(req, reqLenChan)
 	l.w = w
 	t := time.Now()
 	l.h.ServeHTTP(l, req)
 	l.elapsed = time.Since(t)
+	l.reqSize = <-reqLenChan
+}
+
+// Derived from https://github.com/prometheus/client_golang
+func computeApproximateRequestSize(r *http.Request, out chan int) {
+	s := len(r.URL.String())
+	s += len(r.Method)
+	s += len(r.Proto)
+	for name, values := range r.Header {
+		s += len(name)
+		for _, value := range values {
+			s += len(value)
+		}
+	}
+	s += len(r.Host)
+
+	// N.B. r.Form and r.MultipartForm are assumed to be included in r.URL.
+
+	if r.ContentLength != -1 {
+		s += int(r.ContentLength)
+	}
+	out <- s
 }
